@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>What's the weather</title>
+    <!-- Add some CSS to change client UI -->
+    <style>
+    body {
+        background-color: #232F3E;
+        }
+    label, button {
+        color: #FF9900;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 20px;
+        margin-left: 40px;
+        }
+     input {
+        color: #232F3E;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 20px;
+        margin-left: 20px;
+        }
+    #img {
+        margin-left: 180px;
+    }
+    .text {
+        color: lightgrey;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 20px;
+        margin-left: 20px;
+        }
+    </style>
+    <script>
+        // define the callAPI function that takes a first name and last name as parameters
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+        var callAPI = (city)=>{
+            // instantiate a headers object
+            var myHeaders = new Headers();
+            // add content type header to object
+            myHeaders.append("Content-Type", "application/json");
+            // using built in JSON utility package turn object to string and store in a variable
+            var raw = JSON.stringify({"city":city});
+            var iconUrl = 'http://openweathermap.org/img/wn/10d@2x.png';
+            var img = document.getElementById('icon');
+            var title = document.getElementById('title');
+            var showTemp = document.getElementById('showTemp');
+            var search = document.getElementById('search');
+            if (city.length > 0){
+                city = capitalizeFirstLetter(city)
+            }
+            
+            // create a JSON object with parameters for API call and store in a variable
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw,
+                redirect: 'follow'
+            };
+            // make API call with parameters and use promises to get response
+            fetch("https://dnjlelxn1l.execute-api.us-east-1.amazonaws.com/dev", requestOptions)
+            .then(response => response.text())
+            .then(result => {
+                // alert(JSON.parse(result).weather);
+                let result_ = JSON.parse(result).weather;
+                let temp = JSON.parse(result_).temp;
+                let weather = JSON.parse(result_).weatherType;
+                let icon = JSON.parse(result_).icon;
+                iconUrl = 'http://openweathermap.org/img/wn/' + icon + '@4x.png';
+                console.log(result_);
+                img.src = iconUrl;
+                title.innerHTML = "Weather in " + city;
+                showTemp.innerHTML = temp + "°C";
+            })
+            .catch(error => console.log('error', error));
+        }
+
+        window.onload = async () => {
+            callAPI('Taipei')
+            console.log("onload");
+        };
+    </script>
+</head>
+<body>
+    <form onSubmit="callAPI(document.getElementById('search').value); console.log('submit'); return false;">
+        <label>Search city :</label>
+        <input type="text" id="search">
+        <button type="button" onclick="callAPI(document.getElementById('search').value); console.log('click'); return false;">Reload</button>
+        <!-- set button onClick method to call function we defined passing input values as parameters -->
+        <div id="img">
+            <p id="title" class="text"></p>
+            <img id = "icon" src="" alt="weather unknown">
+            <p id="showTemp" class="text"></p>
+        </div>
+        
+    </form>
+</body>
+</html>
